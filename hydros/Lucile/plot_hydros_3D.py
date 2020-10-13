@@ -11,6 +11,7 @@ gammaFULL = np.empty([len(k),len(theta)])
 
 w_start = 1.0
 
+path_Owen = '/wrk/users/dubart/analysis/hydros/Lucile/Owen/'
 path_output = '/wrk/users/dubart/analysis/hydros/Lucile/output/'
 path_fig    = '/wrk/users/dubart/analysis/hydros/Lucile/fig/'
 
@@ -74,12 +75,23 @@ for i in range(0,len(theta)):
         gammaHY  = -HYDROS[3]
         gamma[0] = gammaHY
     
-    p=ax.scatter3D(k,theta[i],omega,c=gamma,cmap='viridis',vmin=gamma_min,vmax=gamma_max)
+    p=ax.scatter3D(k,theta[i],omega,c=gamma,cmap='viridis',s=2,vmin=gamma_min,vmax=gamma_max)
 
 cbar=fig.colorbar(p)
 #cbar.mappable.set_clim(0.0,2.0)
 cbar.set_label('$\\gamma/\\Omega_C$')
 
+Owen1  = np.loadtxt(path_Owen+'2019 01 11 03 25 002019 01 11 03 31 59.txt',skiprows=1,dtype=float)
+omega  = Owen1[:,1]
+kowen  = Owen1[:,2]
+thetaO = Owen1[:,3]
+
+for i in range(0,len(thetaO)):
+    if thetaO[i] > 90.0:
+        thetaO[i] = abs(thetaO[i] - 180.0)
+
+ax.scatter3D(kowen,thetaO,omega,s=1,color='red',marker='x')
+ax.set_ylim(40.0,90.0)
 
 plt.savefig(path_fig+'Lucile_3D_'+str(w_start)+'.png',DPI=300)  
 print(path_fig+'Lucile_3D_'+str(w_start)+'.png')

@@ -25,11 +25,11 @@ epsilon0 = 8.85418781762e-12
 
 tau = 1.0
 
-w_start = 1.0
+w_start = 0.01
 
 scan_type = '1d'
 
-theta = np.arange(40.0,90.1,0.1)
+theta = np.arange(0.0,40.1,0.1)
 
 def write_hydros(step):
 
