@@ -5,12 +5,18 @@ import matplotlib.pyplot as plt
 import colormaps as cmaps
 import matplotlib
 import matplotlib.patches as patches
+from multiprocessing import Pool
+
 
 # Avoids opening a figure window
 if str(matplotlib.get_backend()) != 'Agg':
     plt.switch_backend('Agg') 
 
-run = sys.argv[1]
+numproc   = 20
+run       = sys.argv[1]
+bulkStart = int(sys.argv[2])
+bulkEnd   = int(sys.argv[3])
+
 scale_map = 2.5
 scale_vdf = 2.5
 
@@ -26,14 +32,11 @@ panel_VDF3 = '$(d)$'
 outputLocation=outputdir='/wrk/users/dubart/analysis/subgrid/300_test/fig/'+run+'/Colormap/'
 path_save = '/wrk/users/dubart/analysis/subgrid/300_test/data/'
 
-# Frame extent for this job given as command-line arguments
-if len(sys.argv)==4: # Starting and end frames given
-    timetot = range(int(sys.argv[2]), int(sys.argv[3]), 1)
-else: # Only starting frame given, generate one frame
-    timetot = range(int(sys.argv[2]), int(sys.argv[2])+1, 1)
-for j in timetot:
+
+def plot_cmap(step):
+
     # Source data file
-    bulkname = "bulk."+str(j).rjust(7,'0')+".vlsv"
+    bulkname = "bulk."+str(step).rjust(7,'0')+".vlsv"
     print(bulkname)
 
     # CellIDs of interest
@@ -136,7 +139,12 @@ for j in timetot:
     ax_VDF1_per.text(-2.3,2.0,panel_VDF2,fontsize=22,weight='bold')
     ax_VDF1_per2.text(-2.3,2.0,panel_VDF3,fontsize=22,weight='bold')
     fig.suptitle(run,fontsize=20)
-    figname=run+"_VDFs_"+str(j).rjust(7,'0')
+    figname=run+"_VDFs_"+str(step).rjust(7,'0')
     extension = '.png'
     plt.savefig(outputLocation+figname+extension,dpi=300)
     print(outputLocation+figname+extension)
+
+
+pool = Pool(numproc)
+pool.map(plot_cmap,range(bulkStart,bulkEnd+1))
+pool.terminate()

@@ -116,7 +116,7 @@ for i in range(0,len(loc)):
             # from t = 1 to t = 2*dt
 
             binvalue_tmp = np.zeros(nbins)
-            for j in range(step+1,step+int(dt*2.0)):
+            for j in range(step+1,step+int(dt*2.0)+1):
 
                 lines = []
     
@@ -159,7 +159,7 @@ for i in range(0,len(loc)):
             binvalue_prev = binvalue_tmp / (step - bulkStart)
 
             binvalue_tmp = np.zeros(nbins)
-            for j in range(step,(step+int(dt*2.0))):
+            for j in range(step+1,(step+int(dt*2.0))+1):
 
                 lines = []
 
@@ -202,7 +202,7 @@ for i in range(0,len(loc)):
             binvalue_prev = binvalue_tmp / int(dt*2.0)
 
             binvalue_tmp = np.zeros(nbins)
-            for j in range(step,bulkEnd):
+            for j in range(step+1,bulkEnd+1):
 
                 lines = []
 
@@ -223,7 +223,7 @@ for i in range(0,len(loc)):
             dfdt = (binvalue_next - binvalue_prev) / ((dt/2.0) + (0.5 * (bulkEnd - step) / 2.0))
 
 
-        else:
+        elif step >= (bulkStart+int(dt*2.0)) and step <= (bulkEnd-int(dt*2.0)):
 
             binvalue_tmp = np.zeros(nbins)
             for j in range((step-int(dt*2.0)),step):
@@ -245,7 +245,7 @@ for i in range(0,len(loc)):
             binvalue_prev = binvalue_tmp / int(dt*2.0)
 
             binvalue_tmp = np.zeros(nbins)
-            for j in range(step,(step+int(dt*2.0))):
+            for j in range(step+1,(step+int(dt*2.0))+1):
 
                 lines = []
 
@@ -265,7 +265,47 @@ for i in range(0,len(loc)):
 
             dfdt = (binvalue_next - binvalue_prev) / dt
 
-    
+
+        elif step == bulkEnd:
+
+            # t = n 
+            lines = []
+
+            filePA_prev = open(path_save+run+'/PA/mu'+str(step).rjust(7,'0')+'_'+str(i),'r')
+
+            for line in filePA_prev:
+                lines.append(line)
+
+            angles_prev   = np.fromstring(lines[3],dtype=float,sep=' ')
+            binvalue_prev = np.fromstring(lines[5],dtype=float,sep=' ')
+
+            filePA_prev.close()
+
+
+            # from t = n-2*dt to t = n-1
+
+            binvalue_tmp = np.zeros(nbins)
+            for j in range(step-int(dt*2.0),step):
+
+                lines = []
+
+                filePA = open(path_save+run+'/PA/mu'+str(j).rjust(7,'0')+'_'+str(i),'r')
+
+                for line in filePA:
+                    lines.append(line)
+
+                angles   = np.fromstring(lines[3],dtype=float,sep=' ')
+                binvalue = np.fromstring(lines[5],dtype=float,sep=' ')
+
+                filePA.close()
+
+                binvalue_tmp = binvalue_tmp + binvalue
+
+            binvalue_next = binvalue_tmp / int(dt*2.0)
+
+            dfdt = (binvalue_next - binvalue_prev) / (dt/2.0)    
+
+
         return [dfdt]
     
     pool = Pool(numproc)

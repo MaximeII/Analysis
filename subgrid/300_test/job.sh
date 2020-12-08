@@ -34,4 +34,5 @@ export OMPI_MCA_btl_openib_allow_ib=1
 export I_MPI_PMI_LIBRARY=/usr/lib64/libpmi.so
 
 #srun python get_variables.py 300_T2_B1
-srun python diffusion_coefficient.py 300_T2_B1 0000 200
+#srun python diffusion_coefficient.py 300_T2_B1 0000 200
+srun python colormap_and_VDFs_Box.py 300_T2_B1 0 1000

@@ -47,7 +47,7 @@ def plot_diff(step):
     axs[1].set_xlabel('$\\mu = \\cos{\\theta}$',fontsize = 15)
     axs[1].set_ylabel('$D_{\\mu \\mu}$',fontsize = 15)
     axs[1].set_xlim(-1.0,1.0)
-    axs[1].set_ylim(-0.10,0.10)
+    axs[1].set_ylim(0.0,0.10)
 
     fig.suptitle('t = '+str(step/2.0)+' s',fontsize = 15)
  
@@ -69,7 +69,8 @@ def plot_diff(step):
 
         angles_center = (angles[0:-1]+angles[1:])/2
 
-        axs[0].plot(angles_center,binvalue,linewidth=2)
+        axs[0].plot(angles_center,binvalue,linewidth=2,label=loc[i])
+        axs[0].legend(bbox_to_anchor=(-0.1,0.95,1.2,0.2),loc='upper right',ncol = 9, mode = 'expand',fontsize = 7)
 
         axs[1].plot(angles_center,abs(Dmumu[step - bulkStart,:]),linewidth=2)
 
