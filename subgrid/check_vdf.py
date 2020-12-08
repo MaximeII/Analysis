@@ -4,7 +4,8 @@ import sys
 
 run = sys.argv[1]
 
-path_bulk = '/wrk/users/dubart/'+run+'km/Shock/'
+path_bulk = '/wrk/users/dubart/'+run+'km/maxwellian_periodic/'
+#path_bulk = '/wrk/users/dubart/'+run+'km/Shock/'
 path_save = '/wrk/users/dubart/'+run+'km/data/'
 
 RE = 6371e3 # m
@@ -55,7 +56,7 @@ for j in timetot:
     print("PLOTTED CELL ID: " + str(cid))
     coords = f.get_cell_coordinates(cid)
     print(coords)
-    np.save(path_save+'CellID_Shock.npy',cid)
+    np.save(path_save+'CellID_box.npy',cid)
 
     # check if velocity space exists in this cell
     if f.check_variable('fSaved'): #restart files will not have this value                                                                      

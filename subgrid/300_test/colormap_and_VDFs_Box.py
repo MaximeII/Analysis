@@ -16,18 +16,15 @@ scale_vdf = 2.5
 
 RE = 6371e3
 
-#fileLocation='/wrk/users/dubart/'+run+'km/Shock/'
-#fileLocation='/wrk/users/dubart/'+run+'km/maxwellian_periodic/'
-fileLocation='/wrk/users/dubart/'+run+'km/bulk/'
+fileLocation='/wrk/users/dubart/300_test/'+run+'/bulk/'
 
 panel = '$(a)$'
 panel_VDF1 = '$(b)$'
 panel_VDF2 = '$(c)$'
 panel_VDF3 = '$(d)$'
-reso = ' $300$'
 
-outputLocation=outputdir='/wrk/users/dubart/'+run+'km/fig/'
-path_save = '/wrk/users/dubart/'+run+'km/data/'
+outputLocation=outputdir='/wrk/users/dubart/analysis/subgrid/300_test/fig/'+run+'/Colormap/'
+path_save = '/wrk/users/dubart/analysis/subgrid/300_test/data/'
 
 # Frame extent for this job given as command-line arguments
 if len(sys.argv)==4: # Starting and end frames given
@@ -40,7 +37,7 @@ for j in timetot:
     print(bulkname)
 
     # CellIDs of interest
-    cid1 = int(np.load(path_save+'CellID_box.npy'))
+    cid1 = int(np.load(path_save+'CellID_mid.npy'))
     Re = 6371e3 # m
 
     f = pt.vlsvfile.VlsvReader(fileLocation+bulkname)
@@ -76,7 +73,7 @@ for j in timetot:
     # Colormap with fg_b
     pt.plot.plot_colormap(filename=fileLocation+bulkname,
                           var='vg_b_vol',
-                          vmin=2.0e-8,vmax=3.0e-8,
+                          vmin=2.2e-8,vmax=2.8e-8,
                           boxm=[coords[0]-2.0*RE,coords[0]+2.0*RE,coords[1]-2.0*RE,coords[1]+2.0*RE],
                           run=run,
                           colormap='hot_desaturated',
@@ -138,7 +135,7 @@ for j in timetot:
     ax_VDF1_par.text(-2.3,2.0,panel_VDF1,fontsize=22,weight='bold')
     ax_VDF1_per.text(-2.3,2.0,panel_VDF2,fontsize=22,weight='bold')
     ax_VDF1_per2.text(-2.3,2.0,panel_VDF3,fontsize=22,weight='bold')
-    fig.suptitle('$\\Delta r = $'+reso+' $km$, periodic',fontsize=20)
+    fig.suptitle(run,fontsize=20)
     figname=run+"_VDFs_"+str(j).rjust(7,'0')
     extension = '.png'
     plt.savefig(outputLocation+figname+extension,dpi=300)

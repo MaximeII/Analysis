@@ -8,8 +8,8 @@ path_HYDROS = '/wrk/users/dubart/analysis/hydros/HYDROS/'
 path_output = '/wrk/users/dubart/analysis/hydros/Lucile/output/'
 path_file   = '/wrk/users/dubart/analysis/hydros/Lucile/write/'
 
-theta   = np.arange(0.0,20.1,0.1)
-w_start = 1.0
+theta   = np.arange(20.0,40.1,0.1)
+w_start = 0.01
 
 def run_hydros(step):
 

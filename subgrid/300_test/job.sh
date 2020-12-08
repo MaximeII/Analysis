@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=diffusion
-#SBATCH --time=00:20:00
+#SBATCH --job-name=job
+#SBATCH --time=01:00:00
 #SBATCH --partition=short
 #SBATCH -n 1                  ## number of tasks
 #SBATCH --mem=25G
@@ -11,6 +11,7 @@ t=8                   #threads per process
 module load GCCcore/8.3.0
 module load OpenMPI
 module load Eigen
+
 export PTNONINTERACTIVE=1
 
 umask 007
@@ -32,5 +33,5 @@ export OMP_NUM_THREADS=$t
 export OMPI_MCA_btl_openib_allow_ib=1
 export I_MPI_PMI_LIBRARY=/usr/lib64/libpmi.so
 
-srun python diffusion_coefficient.py 300 0 200
-#srun python plot_diff.py 300 0 100
+#srun python get_variables.py 300_T2_B1
+srun python diffusion_coefficient.py 300_T2_B1 0000 200
