@@ -1,69 +1,104 @@
 import pytools as pt
 import numpy as np
-from multiprocessing import Pool
 import os,sys
-
+from multiprocessing import Pool
 
 numproc = 20 
 
-run = sys.argv[1]
-bulkStart  = int(sys.argv[2])
-bulkEnd    = int(sys.argv[3])
-boundaries = sys.argv[4]
+mode = sys.argv[1] # v or va
 
-dt = 5.0 # How many seconds to calculate diffusion coeff. Min = 0.5s
+dt = 5.0 
+t  = 0.5 
 
-if boundaries == 'periodic':
+path_bulk = '/wrk/group/spacephysics/vlasiator/2D/BCQ/restart/'
+path_save = '/wrk/users/dubart/analysis/subgrid/data/BCQ/restart/'
 
-    path_bulk = '/wrk/users/dubart/'+run+'km/bulk/'
-    path_save = '/wrk/users/dubart/analysis/subgrid/data/'+run+'/periodic/'
-    CellID = int(np.load(path_save+'CellID_box.npy'))
+bulkname = 'restart.0001361.vlsv'
 
-elif boundaries == 'mp':
+RE = 6371e3
+x0 = 15.0 * RE
+z0 = 10.0 * RE
+coord_start = [x0,0.0,z0]
 
-    path_bulk = '/wrk/users/dubart/'+run+'km/maxwellian_periodic/'
-    path_save = '/wrk/users/dubart/analysis/subgrid/data/'+run+'/maxwellian_periodic/'
-    CellID = int(np.load(path_save+'CellID_box.npy'))
+mu0  = 1.26e-6
 
-else:
+f = pt.vlsvfile.VlsvReader(path_bulk+bulkname)
 
-    path_bulk = '/wrk/group/spacephysics/vlasiator/2D/BCQ/bulk/'
-    path_save = '/wrk/users/dubart/analysis/subgrid/data/'+run+'/'
-    CellID = int(np.load(path_save+'CellID.npy'))
+CID_start = int(f.get_cellid(coord_start))
+if mode == 'v':
+    v_start   = f.read_variable('restart_V',CID_start)
+elif mode == 'va':
+    B        = f.read_variable('b',CID_start)
+    Bmag     = np.linalg.norm(B)
+    rhom     = f.read_variable('restart_rhom',CID_start)
+    v_start  = Bmag / np.sqrt(mu0 *rhom)
 
+print(rhom)
+
+x = x0
+v = v_start
+z = z0
+CellIDs = CID_start
+
+while x > 14.0*RE:
+
+    if mode == 'v':
+
+        x = v[0] * t + x
+        z = v[2] * t + z
+
+        CID = int(f.get_cellid([x,0.0,z]))
+        v   = f.read_variable('restart_V',CID)
+
+    elif mode == 'va':
+
+        ex = [1.0,0.0,0.0]
+ 
+        theta = np.arccos(np.dot(B,ex) / Bmag)
+        
+        x = - v*np.cos(theta)*t + x
+        z = v*np.sin(theta)*t + z 
+
+        print('vA = '+str(v/1e3)+'km/s')
+        print('['+str(x)+',0.0,'+str(z)+']')
+
+        CID = int(f.get_cellid([x,0.0,z]))
+        
+        B    = f.read_variable('b',CID)
+        Bmag = np.linalg.norm(B)
+        rhom = f.read_variable('restart_rhom',CID)
+        v    = Bmag / np.sqrt(mu0 *rhom) 
+
+    CellIDs = np.append(CellIDs,CID)
+
+print('Got CellIDs for '+mode)
+np.save(path_save+'CellIDs_'+mode+'.npy',CellIDs)
 
 # Get f(mu,t)
 def get_fmu(step):
+#for i in range(0,len(CellIDs)):
 
-    if run == '300':
-        pt.calculations.pitch_angles_box(vlsvReader=pt.vlsvfile.VlsvReader(path_bulk+'bulk.'+str(step).rjust(7,'0')+'.vlsv'),
-                            cellid = CellID, nbins = 32,
-                            cosine = True,
-                            #plasmaframe = True,
-                            outputfile = path_save+'PA/mu'+str(step).rjust(7,'0'))
+    pt.calculations.pitch_angles(vlsvReader=pt.vlsvfile.VlsvReader(path_bulk+bulkname),
+                        cellid = CellIDs[step], nbins = 32,
+                        cosine = True,
+                        plasmaframe = True,
+                        outputfile = path_save+'PA/mu'+str(step).rjust(4,'0')+'_'+mode)
 
-    elif run == 'BCQ':
-        pt.calculations.pitch_angles(vlsvReader=pt.vlsvfile.VlsvReader(path_bulk+'bulk.'+str(step).rjust(7,'0')+'.vlsv'),
-                            cellid = CellID, nbins = 32,
-                            cosine = True,
-                            plasmaframe = True,
-                            outputfile = path_save+'PA/mu'+str(step).rjust(7,'0'))
-
+#    print('Saved mu'+str(i).rjust(4,'0')+'_'+mode)
     return
 
 pool = Pool(numproc)
-print('Getting fmu ...')
-pool.map(get_fmu,range(bulkStart,bulkEnd+1))
+print('Getting f(mu) ...')
+pool.map(get_fmu,range(0,len(CellIDs)))
 pool.terminate()
-print('Saved "mu'+str(bulkStart).rjust(7,'0')+'" to "mu'+str(bulkEnd).rjust(7,'0')+'" at '+path_save)
-
+print('Saved f(mu) at '+path_save+'PA/')
 
 # Get first and second order derivatives in mu
 def get_dfdmu_dfdmumu(step):
 
     lines = []
 
-    filePA = open(path_save+'PA/mu'+str(step).rjust(7,'0'),'r')
+    filePA = open(path_save+'PA/mu'+str(step).rjust(4,'0')+'_'+mode,'r')
 
     for line in filePA:
         lines.append(line)
@@ -89,25 +124,25 @@ def get_dfdmu_dfdmumu(step):
 
 pool = Pool(numproc)
 print('Getting dfdmu and dfdmumu ...')
-data = pool.map(get_dfdmu_dfdmumu,range(bulkStart,bulkEnd+1))
+data = pool.map(get_dfdmu_dfdmumu,range(0,len(CellIDs)))
 pool.terminate()
 data = np.array(data)
 
 dfdmu   = data[:,0,:]
 dfdmumu = data[:,1,:]
 
-np.save(path_save+'dfdmu.npy',dfdmu)
-np.save(path_save+'dfdmumu.npy',dfdmumu)
+np.save(path_save+'dfdmu_'+mode+'.npy',dfdmu)
+np.save(path_save+'dfdmumu_'+mode+'.npy',dfdmumu)
 
 # Get time derivative
 def get_dfdt(step):
 
-    if step < (bulkStart+int(dt*2.0)):
+    if step < (0 + int(dt*2.0)):
 
         # t = 0
         lines = []
 
-        filePA_prev = open(path_save+'PA/mu'+str(step).rjust(7,'0'),'r')
+        filePA_prev = open(path_save+'PA/mu'+str(step).rjust(4,'0')+'_'+mode,'r')
 
         for line in filePA_prev:
             lines.append(line)
@@ -120,7 +155,7 @@ def get_dfdt(step):
         # t = 1
         lines = []
 
-        filePA_next = open(path_save+'PA/mu'+str(step+int(dt*2.0)).rjust(7,'0'),'r')
+        filePA_next = open(path_save+'PA/mu'+str(step+int(dt*2.0)).rjust(4,'0')+'_'+mode,'r')
 
         for line in filePA_next:
             lines.append(line)
@@ -132,12 +167,12 @@ def get_dfdt(step):
 
         dfdt = (binvalue_next - binvalue_prev) / dt
 
-    elif step > (bulkEnd-int(dt*2.0)):  
+    elif step > (len(CellIDs)-1 - int(dt*2.0)):
 
         # t = n-1
         lines = []
 
-        filePA_prev = open(path_save+'PA/mu'+str(step-int(dt*2.0)).rjust(7,'0'),'r')
+        filePA_prev = open(path_save+'PA/mu'+str(step-int(dt*2.0)).rjust(4,'0')+'_'+mode,'r')
 
         for line in filePA_prev:
             lines.append(line)
@@ -150,7 +185,7 @@ def get_dfdt(step):
         # t = n
         lines = []
 
-        filePA_next = open(path_save+'PA/mu'+str(step).rjust(7,'0'),'r')
+        filePA_next = open(path_save+'PA/mu'+str(step).rjust(4,'0')+'_'+mode,'r')
 
         for line in filePA_next:
             lines.append(line)
@@ -168,7 +203,7 @@ def get_dfdt(step):
         # t-1
         lines = []
 
-        filePA_prev = open(path_save+'PA/mu'+str(step-int(dt*2.0)).rjust(7,'0'),'r')
+        filePA_prev = open(path_save+'PA/mu'+str(step-int(dt*2.0)).rjust(4,'0')+'_'+mode,'r')
 
         for line in filePA_prev:
             lines.append(line)
@@ -181,7 +216,7 @@ def get_dfdt(step):
         # t+1 
         lines = []
 
-        filePA_next = open(path_save+'PA/mu'+str(step+int(dt*2.0)).rjust(7,'0'),'r')
+        filePA_next = open(path_save+'PA/mu'+str(step+int(dt*2.0)).rjust(4,'0')+'_'+mode,'r')
 
         for line in filePA_next:
             lines.append(line)
@@ -197,18 +232,18 @@ def get_dfdt(step):
 
 pool = Pool(numproc)
 print('Getting dfdt ...')
-data = pool.map(get_dfdt,range(bulkStart,bulkEnd+1))
+data = pool.map(get_dfdt,range(0,len(CellIDs)))
 pool.terminate()
 data = np.array(data)
 
 dfdt = data[:,0,:]
 
-np.save(path_save+'dfdt.npy',dfdt)
+np.save(path_save+'dfdt_'+mode+'.npy',dfdt)
 
 # Get dmu
 lines = []
 
-filePA = open(path_save+'PA/mu'+str(bulkStart).rjust(7,'0'),'r')
+filePA = open(path_save+'PA/mu0000_'+mode,'r')
 
 for line in filePA:
     lines.append(line)
@@ -242,7 +277,7 @@ def get_Dmumu(step):
 
     return [Dmumu]
 
-  
+
 pool = Pool(numproc)
 print('Getting Dmumu ...')
 data = pool.map(get_Dmumu,range(0,dfdt.shape[0]))
@@ -252,5 +287,6 @@ data = np.array(data)
 
 Dmumu = data[:,0,:]
 
-np.save(path_save+'Dmumu.npy',Dmumu)
-print('Saved '+path_save+'Dmumu.npy')
+np.save(path_save+'Dmumu_'+mode+'.npy',Dmumu)
+print('Saved '+path_save+'Dmumu_'+mode+'.npy')
+

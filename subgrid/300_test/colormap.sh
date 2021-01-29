@@ -1,6 +1,5 @@
 #!/bin/bash
-#SVATCH -M Vorna
-#SBATCH --job-name=diffusion
+#SBATCH --job-name=colormap
 #SBATCH --time=02:00:00
 #SBATCH --partition=short
 #SBATCH -n 1                  ## number of tasks
@@ -34,6 +33,4 @@ export OMP_NUM_THREADS=$t
 export OMPI_MCA_btl_openib_allow_ib=1
 export I_MPI_PMI_LIBRARY=/usr/lib64/libpmi.so
 
-srun python diffusion_coefficient.py 300_T5_B3 1 350
-#srun python plot_diff.py 300_T5_B2 1 600
-#srun python diff_avg.py
+srun python colormap_and_VDFs_Box.py 300_T5_B2 1 700

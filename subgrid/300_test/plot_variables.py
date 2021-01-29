@@ -8,8 +8,8 @@ numproc = 20
 
 run = sys.argv[1]
 
-bulkStart = 0000
-bulkEnd   = 1000
+bulkStart = int(sys.argv[2])
+bulkEnd   = int(sys.argv[3])
 
 path_bulk = '/wrk/users/dubart/300_test/'+run+'/bulk/'
 path_save = '/wrk/users/dubart/analysis/subgrid/300_test/data/'
@@ -34,15 +34,15 @@ fig, axs = plt.subplots(2,1,sharex=True)
 
 for i in range(0,len(loc)):
 
-    axs[0].plot(time,beta[:,i],linewidth = 2,label = loc[i])
+    axs[0].plot(time,beta_par[:,i],linewidth = 2,label = loc[i])
     axs[1].plot(time,T_aniso[:,i],linewidth = 2)
 
-axs[0].set_ylabel('$\\beta$',fontsize = 15)
+axs[0].set_ylabel('$\\beta_{\\parallel}$',fontsize = 15)
 axs[0].legend(bbox_to_anchor=(-0.1,0.95,1.2,0.2),loc='upper right',ncol = 9, mode = 'expand',fontsize = 7)
 
 axs[1].set_ylabel('$T_{\\bot}/T_{\\parallel}$',fontsize = 15)
 axs[1].set_xlabel('Time (s)')
-axs[1].set_xlim(0.0,500.0)
+axs[1].set_xlim(0.0,bulkEnd/2)
 
 fig.suptitle(run,fontsize = 15)
 

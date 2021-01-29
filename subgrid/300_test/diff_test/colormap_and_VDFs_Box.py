@@ -22,15 +22,16 @@ scale_vdf = 2.5
 
 RE = 6371e3
 
-fileLocation='/wrk/users/dubart/300_test/'+run+'/bulk/'
+#fileLocation='/wrk/users/dubart/'+run+'km/maxwellian_periodic/'
+fileLocation='/wrk/users/dubart/'+run+'km/diffusion/bulk/'
 
 panel = '$(a)$'
 panel_VDF1 = '$(b)$'
 panel_VDF2 = '$(c)$'
 panel_VDF3 = '$(d)$'
 
-outputLocation=outputdir='/wrk/users/dubart/analysis/subgrid/300_test/fig/'+run+'/Colormap/'
-path_save = '/wrk/users/dubart/analysis/subgrid/300_test/data/'
+outputLocation=outputdir='/wrk/users/dubart/analysis/subgrid/300_test/diff_test/fig/Colormap/'
+path_save = '/wrk/users/dubart/analysis/subgrid/300_test/diff_test/data/'
 
 
 def plot_cmap(step):
@@ -40,7 +41,7 @@ def plot_cmap(step):
     print(bulkname)
 
     # CellIDs of interest
-    cid1 = int(np.load(path_save+'CellID_mid.npy'))
+    cid1 = int(np.load(path_save+'CellID_'+run+'.npy'))
     Re = 6371e3 # m
 
     f = pt.vlsvfile.VlsvReader(fileLocation+bulkname)
@@ -76,7 +77,7 @@ def plot_cmap(step):
     # Colormap with fg_b
     pt.plot.plot_colormap(filename=fileLocation+bulkname,
                           var='vg_b_vol',
-                          vmin=1.0e-8,vmax=2.0e-8,
+                          vmin=2.2e-8,vmax=2.7e-8,
                           boxm=[coords[0]-2.0*RE,coords[0]+2.0*RE,coords[1]-2.0*RE,coords[1]+2.0*RE],
                           run=run,
                           colormap='hot_desaturated',
@@ -139,7 +140,7 @@ def plot_cmap(step):
     ax_VDF1_per.text(-2.3,2.0,panel_VDF2,fontsize=22,weight='bold')
     ax_VDF1_per2.text(-2.3,2.0,panel_VDF3,fontsize=22,weight='bold')
     fig.suptitle(run,fontsize=20)
-    figname=run+"_VDFs_"+str(step).rjust(7,'0')
+    figname=run+"_VDFs_diff_"+str(step).rjust(7,'0')
     extension = '.png'
     plt.savefig(outputLocation+figname+extension,dpi=300)
     print(outputLocation+figname+extension)

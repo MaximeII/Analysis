@@ -2,7 +2,7 @@ import pytools as pt
 import numpy as np
 from multiprocessing import Pool
 import os,sys
-
+from scipy import integrate
 
 numproc = 20 
 
@@ -12,6 +12,7 @@ bulkEnd    = int(sys.argv[3])
 boundaries = sys.argv[4]
 
 dt = 5.0 # How many seconds to calculate diffusion coeff. Min = 0.5s
+
 
 if boundaries == 'periodic':
 
@@ -222,23 +223,9 @@ dmu = abs(angles[0]-angles[1])
 # Get diffusion coefficient
 def get_Dmumu(step):
 
-    Mat = np.zeros([dfdmumu.shape[1],dfdmumu.shape[1]])
+    flux = integrate.simps(dfdt[step,:],dx=dmu)     
 
-    for j in range(0,dfdmumu.shape[1]):
-        for k in range(0,dfdmumu.shape[1]):
-
-            if k == j:
-                Mat[j,k] = dfdmumu[step,j] # Diagonal
-            elif k == j+1:
-                Mat[j,k] = dfdmu[step,j]/(2*dmu) # upper
-            elif k == j-1:
-                Mat[j,k] = -dfdmu[step,j]/(2*dmu) # lower
-
-
-#    Mat[0,-1] = -dfdmu[step,0]/(2*dmu) # added for periodic boundary conditions
-#    Mat[-1,0] = dfdmu[step,-1]/(2*dmu)
-
-    Dmumu = np.linalg.solve(Mat,dfdt[step,:])
+    Dmumu = - flux / integrate.simps(dfdmumu[step,:],dx=dmu)
 
     return [Dmumu]
 

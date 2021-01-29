@@ -26,15 +26,15 @@ loc = ['mid','right','left','top_mid','bot_mid','top_r','bot_r','top_l','bot_l']
 
 if run == '300_T2_B1' or run == '300_T3_B1' or run == '300_T4_B1' or run == '300_T5_B1':
 
-    dt = 5.0 # How many seconds to calculate diffusion coeff. Min = 0.5s. 2.0 * Gyroperiod
+    dt = 6.0 # How many seconds to calculate diffusion coeff. Min = 0.5s. 2.0 * Gyroperiod
 
 elif run == '300_T2_B2' or run == '300_T3_B2' or run == '300_T4_B2' or run == '300_T5_B2':
 
-    dt = 7.0
+    dt = 8.0
 
 elif run == '300_T2_B3' or run == '300_T3_B3' or run == '300_T4_B3' or run == '300_T5_B3':
 
-    dt = 9.0
+    dt = 10.0
 
 def plot_diff(step):
 

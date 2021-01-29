@@ -7,8 +7,8 @@ numproc = 20
 
 run = sys.argv[1]
 
-bulkStart = 0000
-bulkEnd   = 1000
+bulkStart = int(sys.argv[2])
+bulkEnd   = int(sys.argv[3])
 
 path_bulk = '/wrk/users/dubart/300_test/'+run+'/bulk/'
 path_save = '/wrk/users/dubart/analysis/subgrid/300_test/data/'
